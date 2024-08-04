@@ -77,7 +77,7 @@
 													<?php
 													$sql_query = "";
 													if($session_user_type_id == 2 || $session_user_type_id == 4){
-														$sql_query = "SELECT institution_id, institution_type, institution_name FROM institutions WHERE institution_type='museum' AND institution_id = " . $session_user_institution_id;
+														$sql_query = "SELECT institution_id, institution_type, institution_name FROM institutions WHERE institution_type='museum' AND institution_id IN (" . $session_user_institution_id . ")";
 													}
 													if($session_user_type_id == 1){
 														$sql_query = "SELECT institution_id, institution_type, institution_name FROM institutions WHERE institution_type='museum'";

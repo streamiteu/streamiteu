@@ -127,13 +127,14 @@
 				processData: false,
 				contentType: false,
 				success: function(response){
+					/*
 					var html_content = "";
 						Object.keys(multimediaA).forEach(key => {
 							if(multimediaA[key].exhibit_id == currentExhibit)
 								html_content=html_content+ "<li><a href='#' onclick=ShowMultimedia('" + multimediaA[key].path + "')><i class='fa fa-file' aria-hidden='true'></i><span>" + multimediaA[key].description + "</span></a></li>";
 						});
 						$('#multimedia-attachments').html(html_content);
-					
+					*/
 				},
 				error: function(xhr, status, error) {
 					
@@ -167,12 +168,14 @@
 				processData: false,
 				contentType: false,
 				success: function(response){
+					/*
 					var html_content = "";
 						Object.keys(multimediaA).forEach(key => {
 							if(multimediaA[key].exhibit_id == currentExhibit)
 								html_content=html_content+ "<li><a href='#' onclick=ShowMultimedia('" + multimediaA[key].path + "')><i class='fa fa-file' aria-hidden='true'></i><span>" + multimediaA[key].description + "</span></a></li>";
 						});
 						$('#multimedia-attachments').html(html_content);
+					*/
 				},
 				error: function(xhr, status, error) {
 					
@@ -319,6 +322,26 @@
 		$("#outputStudents option:selected").remove();	
 		
 	});
+	
+	//add or edit tour guide for a tour
+	$('.edittg-item-btn').on('click', function(e) {
+		$('#tour_id').val($(this).data('itemid'));
+		$('#return_route').val($(this).data('returnroute'));
+		$('#editTourGuideModalDialog').css("display", "block");
+	});
+	$('.closetg').on('click', function(e) {
+		$('#editTourGuideModalDialog').css("display", "none");
+	});
+	$('#cancelModalTG').on('click', function(e) {
+		$('#editTourGuideModalDialog').css("display", "none");
+	});
+	
+	$(window).click(function(e) {
+		if(e.target.id=="editTourGuideModalDialog"){
+			$('#editTourGuideModalDialog').css("display", "none");
+		}
+	});
+	
 	
 	
 	// validation summary
@@ -542,6 +565,49 @@
 		changePassword(fd);
     });
 	
+	
+	
+	//edit tour guide
+	$('form#tg-item-form').submit(function(e) {
+		e.preventDefault();
+		$(".tg-item-message").css("display", "none");	
+		var tour_id = $("input[name=tour_id]").val();
+		var tour_guide_id = $('#tour_guide_id').find(":selected").val();
+		var return_route = $("input[name=return_route]").val();
+		var fd = new FormData();
+		fd.append('tour_id', tour_id);
+		fd.append('tour_guide_id', tour_guide_id);
+		fd.append('return_route', return_route);
+		
+		$.ajax({
+			url:"./controller/updateTourGuideController.php",
+			method:"post",
+			data:fd,
+			processData: false,
+			contentType: false,
+			success: function(response){
+				//var data = $.parseJSON(response);
+				$(".tg-item-message").css("display", "inline-block");
+				$(".tg-item-message").css("color", "#2BC82B");
+				$(".tg-item-message").html('Tour guide has been successfully added to this tour');
+				setTimeout(function() {
+					$(".editTourGuideModalDialog").css("display", "none");
+					Router(return_route);
+				}, 2000);
+			},
+			error: function(xhr, status, error) {
+				//var result = JSON.parse(xhr.responseText);
+				if(xhr.status==401){
+					window.location.href="signin.php"; //session expired
+				}else{
+					$(".tg-item-message").css("display", "inline-block");
+					$(".tg-item-message").css("color", "#ff0000");
+					$(".tg-item-message").html(result.message);
+				}
+			}
+		});
+    });
+	
 	//edit class form subimt
 	$('form#editclass-form').submit(function(e) {
 		e.preventDefault();
@@ -611,7 +677,7 @@
 			processData: false,
 			contentType: false,
 			success: function(response){
-				var data = $.parseJSON(response);
+				//var data = $.parseJSON(response);
 				$(".delete-item-message").css("display", "inline-block");
 				$(".delete-item-message").css("color", "#2BC82B");
 				$(".delete-item-message").html('The item is successfully deleted');
@@ -621,7 +687,7 @@
 				}, 2000);
 			},
 			error: function(xhr, status, error) {
-				var result = JSON.parse(xhr.responseText);
+				//var result = JSON.parse(xhr.responseText);
 				if(xhr.status==401){
 					window.location.href="signin.php"; //session expired
 				}else{
@@ -657,6 +723,7 @@
 			processData: false,
 			contentType: false,
 			success: function(response){
+				
 				var data = $.parseJSON(response);
 				$(".delete-item-message").css("display", "inline-block");
 				$(".delete-item-message").css("color", "#2BC82B");
@@ -664,6 +731,52 @@
 				setTimeout(function() {
 					$(".deleteModalDialog").css("display", "none");
 					Router(return_route, exhibit_id);
+				}, 2000);
+			},
+			error: function(xhr, status, error) {
+				var result = JSON.parse(xhr.responseText);
+				if(xhr.status==401){
+					window.location.href="signin.php"; //session expired
+				}else{
+					$(".delete-item-message").css("display", "inline-block");
+					$(".delete-item-message").css("color", "#ff0000");
+					$(".delete-item-message").html(result.message);
+				}
+			}
+		});
+    });
+	
+	
+	//delete lecture form subimt
+	$('form#delete-lecture-form').submit(function(e) {
+		e.preventDefault();
+		$(".delete-item-message").css("display", "none");	
+		var item_id = $("input[name=delete_item_id]").val();
+		var delete_entity = $("input[name=delete_entity]").val();
+		var return_route = $("input[name=return_route]").val();
+		var delete_key = $("input[name=delete_key]").val();
+		var tour_id = $("input[name=tour_id]").val();
+		
+		var fd = new FormData();
+		fd.append('item_id', item_id);
+		fd.append('delete_entity', delete_entity);
+		fd.append('return_route', return_route);
+		fd.append('delete_key', delete_key);
+		
+		$.ajax({
+			url:"./controller/deleteItemController.php",
+			method:"post",
+			data:fd,
+			processData: false,
+			contentType: false,
+			success: function(response){
+				var data = $.parseJSON(response);
+				$(".delete-item-message").css("display", "inline-block");
+				$(".delete-item-message").css("color", "#2BC82B");
+				$(".delete-item-message").html('The item is successfully deleted');
+				setTimeout(function() {
+					$(".deleteModalDialog").css("display", "none");
+					Router(return_route, tour_id);
 				}, 2000);
 			},
 			error: function(xhr, status, error) {
@@ -1778,6 +1891,55 @@
     });
 	
 	
+	//upload lectures to route form subimt
+	$('form#edit-lectures-form').submit(function(e) {
+		e.preventDefault();
+		$(".return-message").css("display", "none");	
+		var lecture_title = $("input[name=lecture_title]").val();
+		var tour_id = $("input[name=tour_id]").val();
+		var	file_multimedia = $("#file_multimedia").prop("files")[0];
+		
+		var fd = new FormData();
+		fd.append('lecture_title', lecture_title);
+		fd.append('tour_id', tour_id);
+		fd.append('file_multimedia', file_multimedia);
+		
+		$.ajax({
+			url:"./controller/insertLectureController.php",
+			method:"post",
+			data:fd,
+			processData: false,
+			contentType: false,
+			success: function(response){
+				var data = $.parseJSON(response);
+				$(".return-message").css("display", "block");
+				$(".return-message").css("color", "#2BC82B");
+				$('.return-message').html(data.message);
+				Router('edittourlectures', tour_id);
+			},
+			error: function(xhr, status, error) {
+				
+				var result = JSON.parse(xhr.responseText);
+				if(xhr.status==401){
+					window.location.href="signin.php"; //session expired
+				}else if(xhr.status==402){
+					$(".return-message").css("display", "block");
+					$(".return-message").css("color", "#ff0000");
+					$('.return-message').html(result.message);
+				}else if(xhr.status==403){
+					$(".return-message").css("display", "block");
+					$(".return-message").css("color", "#ff0000");
+					$('.return-message').html(result.message);
+				}else {
+					$(".return-message").css("display", "block");
+					$(".return-message").css("color", "#ff0000");
+					$('.return-message').html(result.message);
+				}
+			}
+		});
+		
+    });
+	
 	//insert new tour form subimt
 	$('form#new-tour-form').submit(function(e) {
 		e.preventDefault();
@@ -2087,7 +2249,7 @@ const routes = {
     },
 	"institutions": {
         template: "./view/viewInstitutionsAdmin.php",
-        title: "List of users",
+        title: "List of institutions",
         description: "This is an institutions page",
     },
 	"newinstitution": {
@@ -2140,10 +2302,20 @@ const routes = {
         title: "Edit exhibit multimedia",
         description: "This is an edit exhibit multimedia page",
     },
+	"edittourlectures": {
+        template: "./view/viewEditTourLectures.php",
+        title: "Edit tour lectures",
+        description: "This is the lectures page",
+    },
 	"scheduler": {
         template: "./view/viewScheduler.php",
         title: "Scheduler",
         description: "This is scheduler page",
+    },
+	"saveExhibit": {
+        template: "./controller/saveExhibit.php",
+        title: "Save exhibit",
+        description: "Save exhibit page",
     },
 };
 
@@ -2398,4 +2570,56 @@ function Logout(){
 		
 	}
 	
+	function saveExhibit(exhibitName,exDescription,exibitionId,xPosVar,yPosVar,zPosVar,xOrVar,yOrVar,zOrVar,wOrVar){
+		var fd = new FormData();
+		fd.append('exhibit_name', exhibitName);
+		fd.append('exhibit_description', exDescription);
+
+		fd.append('exhibition_id', exibitionId);
+		fd.append('exhibit_location_x', xPosVar);
+		fd.append('exhibit_location_y', yPosVar);
+		fd.append('exhibit_location_z', zPosVar);
+		fd.append('exhibit_heading_x', xOrVar);
+		fd.append('exhibit_heading_y', yOrVar);
+		fd.append('exhibit_heading_z', zOrVar);
+		fd.append('exhibit_heading_w', wOrVar);	
+	
+
+		$.ajax({
+			url:"./controller/saveExhibitController.php",
+			method:"post",
+			data:fd,
+			processData: false,
+			contentType: false,
+			success: function(response){
+				var data = $.parseJSON(response);
+				$(".return-message").css("display", "inline-block");
+				$(".return-message").css("color", "#2BC82B");
+				$('.return-message').html('New exhibit inserted');
+				setTimeout(function() {
+					// Router('exhibits');
+					$('.return-message').html("");
+					$(".return-message").css("display", "none");
+				}, 2000);
+			},
+			error: function(xhr, status, error) {
+				var result = JSON.parse(xhr.responseText);
+				if(xhr.status==401){
+					window.location.href="signin.php"; //session expired
+				}else if(xhr.status==402){
+					$(".return-message").css("display", "inline-block");
+					$(".return-message").css("color", "#ff0000");
+					$('.return-message').html(result.message);
+				}else if(xhr.status==403){
+					$(".return-message").css("display", "inline-block");
+					$(".return-message").css("color", "#ff0000");
+					$('.return-message').html(result.message);
+				}else {
+					$(".return-message").css("display", "inline-block");
+					$(".return-message").css("color", "#ff0000");
+					$('.return-message').html(result.message);
+				}
+			}
+		});
+	}
 	

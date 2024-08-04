@@ -41,7 +41,7 @@ if(isset($_SESSION['loggedin']) && isset($_SESSION['id'])){
 										<?php
 										$sql_query = "";
 										if($session_user_type_id == 2 || $session_user_type_id == 4){
-											$sql_query = 'SELECT exhibits.exhibit_id, exhibits.exhibit_name, exhibits.exhibit_description, exhibits.exhibition_id, exhibits.exhibit_location_x, exhibits.exhibit_location_y, exhibits.exhibit_location_z, exhibits.exhibit_heading_x, exhibits.exhibit_heading_y, exhibits.exhibit_heading_z, exhibits.active, exhibitions.exhibition_id, exhibitions.exhibition_title FROM exhibits, exhibitions WHERE exhibitions.exhibition_id=exhibits.exhibition_id AND exhibitions.institution_id = ' . $session_user_institution_id;
+											$sql_query = 'SELECT exhibits.exhibit_id, exhibits.exhibit_name, exhibits.exhibit_description, exhibits.exhibition_id, exhibits.exhibit_location_x, exhibits.exhibit_location_y, exhibits.exhibit_location_z, exhibits.exhibit_heading_x, exhibits.exhibit_heading_y, exhibits.exhibit_heading_z, exhibits.active, exhibitions.exhibition_id, exhibitions.exhibition_title FROM exhibits, exhibitions WHERE exhibitions.exhibition_id=exhibits.exhibition_id AND exhibitions.institution_id IN (' . $session_user_institution_id . ')';
 										}
 										if($session_user_type_id == 1){
 											$sql_query = 'SELECT exhibits.exhibit_id, exhibits.exhibit_name, exhibits.exhibit_description, exhibits.exhibition_id, exhibits.exhibit_location_x, exhibits.exhibit_location_y, exhibits.exhibit_location_z, exhibits.exhibit_heading_x, exhibits.exhibit_heading_y, exhibits.exhibit_heading_z, exhibits.active, exhibitions.exhibition_id, exhibitions.exhibition_title FROM exhibits, exhibitions WHERE exhibitions.exhibition_id=exhibits.exhibition_id';

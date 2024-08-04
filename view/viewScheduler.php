@@ -84,7 +84,7 @@
 
 										<h2 class="panel-title">Scheduler</h2>
 										<p class="panel-subtitle">
-											Create tour availability schedule
+											Create tour availability schedule 
 										</p>
 									</header>
 									<div class="panel-body">
@@ -102,11 +102,12 @@
 													<?php
 													$sql_query = "";
 													if($session_user_type_id == 2){
-														$sql_query = "SELECT institution_id, institution_name FROM institutions WHERE institution_type='museum' AND institution_id = " . $session_user_institution_id;
+														$sql_query = "SELECT institution_id, institution_name FROM institutions WHERE institution_type='museum' AND institution_id IN (" . $session_user_institution_id . ")";
 													}
 													if($session_user_type_id == 1){
 														$sql_query = "SELECT institution_id, institution_name FROM institutions WHERE institution_type='museum'";
 													}
+													
 													if($stmt = $conn->prepare($sql_query)){
 														$stmt->execute();
 														$stmt->store_result();
@@ -132,12 +133,12 @@
 													<?php
 													$sql_query = "";
 													if($session_user_type_id == 2){
-														$sql_query = "SELECT exhibition_id, institution_id, exhibition_title FROM exhibitions WHERE institution_id = " . $session_user_institution_id;
+														$sql_query = "SELECT exhibition_id, institution_id, exhibition_title FROM exhibitions WHERE institution_id IN (" . $session_user_institution_id . ")";
 													}
 													if($session_user_type_id == 1){
 														$sql_query = "SELECT exhibition_id, institution_id, exhibition_title FROM exhibitions";
 													}
-													if($stmt = $conn->prepare("SELECT exhibition_id, institution_id, exhibition_title FROM exhibitions")){
+													if($stmt = $conn->prepare($sql_query)){
 														$stmt->execute();
 														$stmt->store_result();
 														$stmt->bind_result($exhibition_id, $institution_id, $exhibition_title);

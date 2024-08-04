@@ -44,7 +44,7 @@ if(isset($_SESSION['loggedin']) && isset($_SESSION['id'])){
 										<?php
 										$sql_query = "";
 										if($session_user_type_id == 2 || $session_user_type_id == 4){
-											$sql_query = 'SELECT exhibitions.exhibition_id, exhibitions.exhibition_title, exhibitions.exhibition_description, exhibitions.institution_id, exhibitions.exhibition_map, exhibitions.exhibition_ip, exhibitions.exhibition_port, exhibitions.server_name, exhibitions.active, institutions.institution_name FROM exhibitions, institutions WHERE exhibitions.institution_id=institutions.institution_id AND institutions.institution_id = ' . $session_user_institution_id;
+											$sql_query = 'SELECT exhibitions.exhibition_id, exhibitions.exhibition_title, exhibitions.exhibition_description, exhibitions.institution_id, exhibitions.exhibition_map, exhibitions.exhibition_ip, exhibitions.exhibition_port, exhibitions.server_name, exhibitions.active, institutions.institution_name FROM exhibitions, institutions WHERE exhibitions.institution_id=institutions.institution_id AND institutions.institution_id IN (' . $session_user_institution_id . ')';
 										}
 										if($session_user_type_id == 1){
 											$sql_query = 'SELECT exhibitions.exhibition_id, exhibitions.exhibition_title, exhibitions.exhibition_description, exhibitions.institution_id, exhibitions.exhibition_map, exhibitions.exhibition_ip, exhibitions.exhibition_port, exhibitions.server_name, exhibitions.active, institutions.institution_name FROM exhibitions, institutions WHERE exhibitions.institution_id=institutions.institution_id';

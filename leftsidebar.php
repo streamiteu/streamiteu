@@ -89,12 +89,13 @@
 													 Scheduled tours
 												</a>
 											</li>
+											<?php if($_SESSION['user_type_id'] == 5) { ?>
 											<li>
 												<a href="#newtour" onclick="Router('newtour')">
 													 Schedule new tour
 												</a>
 											</li>
-											
+											<?php } ?>
 										</ul>
 									</li>
 									<?php if($_SESSION['user_type_id'] == 1 || $_SESSION['user_type_id'] == 2 || $_SESSION['user_type_id'] == 3) { ?>

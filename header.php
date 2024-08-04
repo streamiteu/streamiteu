@@ -36,7 +36,7 @@ if(isset($_SESSION['loggedin']) && isset($_SESSION['id'])){
 						<i class="fa fa-bars" aria-label="Toggle sidebar"></i>
 					</div>
 				</div>
-			
+			   
 				<!-- start: search & user box -->
 				<div class="header-right">
 					<!--

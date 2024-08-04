@@ -14,8 +14,8 @@ if(isset($_SESSION['loggedin']) && isset($_SESSION['id'])){
 		$tour_exhibits = $_POST['tour_exhibits'];
 		$active = 0;
 		
-		if($stmt = $conn->prepare('INSERT INTO tours (schedule_id, tour_attendees, tour_exhibits, active) VALUES (?, ?, ?, ?)')){
-			$stmt->bind_param('issi', $schedule_id, $tour_attendees, $tour_exhibits, $active);
+		if($stmt = $conn->prepare('INSERT INTO tours (schedule_id, tour_attendees, tour_exhibits, tour_teacher_id, active) VALUES (?, ?, ?, ?, ?)')){
+			$stmt->bind_param('issii', $schedule_id, $tour_attendees, $tour_exhibits, $_SESSION['id'], $active);
 			$stmt->execute();
 			$c_id = $stmt->insert_id;
 			if ($c_id != 0) {

@@ -1,6 +1,12 @@
 <?php
 	include_once "../config/dbconnect.php";
 	session_start();
+	function move_to_up(&$continents, $string) 
+	{ 
+		$var = array($string => $continents[$string]); 
+		unset($continents[$string]); 
+		$continents = $var + $continents; 
+	} 
 
 	if(isset($_SESSION['loggedin']) && isset($_SESSION['id'])){
 		$tour_id=$_POST['id'];
@@ -248,30 +254,42 @@
 																</a>
 															</h4>
 														</div>
+														<?php
+															$exhibits_array = array();
+															if($stmt = $conn->prepare("SELECT exhibit_id, exhibit_name FROM exhibits WHERE exhibition_id=? AND active=1")){
+																$stmt->bind_param('i', $u_exhibition_id);
+																$stmt->execute();
+																$stmt->store_result();
+																$stmt->bind_result($exhibit_id, $exhibit_name);
+																
+																while ($stmt->fetch()) {
+																	//$exhibits_array[$exhibit_id] = $exhibit_name;
+																	$exhibits_array += [$exhibit_id => $exhibit_name]; 
+																}
+																$stmt->close();
+																$temp = array_map('trim', explode(',', $tour_exhibits));
+																$reversed = array_reverse($temp);
+																foreach ($reversed as $x) {
+																	move_to_up($exhibits_array, $x);
+																}
+															}
+														?>
 														<div id="collapse1One" class="accordion-body collapse in">
 															<div class="panel-body">
 																<ul id="exhibit-list" class="widget-todo-list">
 																	<?php
-																	if($stmt = $conn->prepare("SELECT exhibit_id, exhibit_name FROM exhibits WHERE exhibition_id=? AND active=1")){
-																		$stmt->bind_param('i', $u_exhibition_id);
-																		$stmt->execute();
-																		$stmt->store_result();
-																		$stmt->bind_result($exhibit_id, $exhibit_name);
-																		while ($stmt->fetch()) {
+																	foreach ($exhibits_array as $key => $value) {
 																	?>
 																	<li>
 																		<div class="checkbox-custom checkbox-default">
-																			<input type="checkbox" checked id="todoListItem-<?php echo $exhibit_id?>" value="<?php echo $exhibit_id?>" class="todo-check">
-																			<label class="todo-label" for="todoListItem-<?php echo $exhibit_id?>"><span><?php echo $exhibit_name ?></span></label>
+																			<input type="checkbox" <?php if (in_array($key, $reversed)) { echo 'checked'; } ?> id="todoListItem-<?php echo $key?>" value="<?php echo $key?>" class="todo-check">
+																			<label class="todo-label" for="todoListItem-<?php echo $key?>"><span><?php echo $value ?></span></label>
 																		</div>
 																	</li>
 																	<?php
-																		}
 																	}
-																	$stmt->close();
 																	?>
 																</ul>
-																
 															</div>
 														</div>
 													</div>

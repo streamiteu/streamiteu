@@ -6,20 +6,31 @@
 				$email=$_POST['email'];
 				$password=$_POST['u_password'];
 
-				if($stmt = $conn->prepare('SELECT user_id, user_password, user_type_id, institution_id FROM users WHERE email=?')){
+				if($stmt = $conn->prepare('SELECT users.user_id, users.user_password, users.user_type_id, institutions.institution_id FROM users, userinstitution, institutions WHERE users.user_id = userinstitution.user_id AND userinstitution.institution_id = institutions.institution_id AND email=?')){
 					$stmt->bind_param('s', $email);
 					$stmt->execute();
 					$stmt->store_result();
 					if ($stmt->num_rows > 0) {
 						$stmt->bind_result($id, $pass, $user_type_id, $institution_id);
 						$stmt->fetch();
+						$temp = $institution_id . ', ';
 						if (password_verify($password, $pass)) { // Verifying Password
 							session_start();
 							$_SESSION['loggedin'] = TRUE;
 							$_SESSION['email'] = $email;
 							$_SESSION['id'] = $id;
 							$_SESSION['user_type_id'] = $user_type_id;
-							$_SESSION['user_institution_id'] = $institution_id;
+							if($stmt->num_rows ==1){
+								$_SESSION['user_institution_id'] = $institution_id;
+							}else{
+								
+								while ($stmt->fetch()) {
+									$temp = $temp . $institution_id . ', ';
+								}
+								$temp = substr($temp, 0, -2);
+								$_SESSION['user_institution_id'] = $temp;
+								//$_SESSION['user_institution_id'] = substr($_SESSION['user_institution_id'], 0, -3);
+							}
 							$response_code=200;
 							$message='Login successful';
 						}

@@ -52,7 +52,7 @@ if(isset($_SESSION['loggedin']) && isset($_SESSION['id'])){
 													<?php
 													$sql_query = "";
 													if($session_user_type_id == 2 || $session_user_type_id == 4){
-														$sql_query = 'SELECT exhibition_id, exhibition_title FROM exhibitions WHERE institution_id = ' . $session_user_institution_id;
+														$sql_query = 'SELECT exhibition_id, exhibition_title FROM exhibitions WHERE institution_id IN (' . $session_user_institution_id . ')';
 													}
 													if($session_user_type_id == 1){
 														$sql_query = 'SELECT exhibition_id, exhibition_title FROM exhibitions';

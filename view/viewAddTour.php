@@ -7,11 +7,11 @@
 		$eventArray = array();
 		if(isset($_POST['id'])){
 		
-			if($stmt = $conn->prepare("SELECT schedule_id, schedule_type, exhibition_id, schedule_start, schedule_end FROM schedule WHERE exhibition_id=?")){
+			if($stmt = $conn->prepare("SELECT schedule.schedule_id, schedule.schedule_type, schedule.exhibition_id, schedule.schedule_start, schedule.schedule_end, exhibitions. institution_id FROM schedule, exhibitions WHERE schedule.exhibition_id = exhibitions.exhibition_id AND schedule.exhibition_id=?")){
 				$stmt->bind_param('i', $_POST['id']);
 				$stmt->execute();
 				$stmt->store_result();
-				$stmt->bind_result($schedule_id, $schedule_type, $exhibition_id, $schedule_start, $schedule_end);
+				$stmt->bind_result($schedule_id, $schedule_type, $exhibition_id, $schedule_start, $schedule_end, $u_institution_id);
 					while ($stmt->fetch()) {
 						$color = '#9ceef8';
 						$title = 'Available for guided tour';
@@ -85,10 +85,10 @@
 													if($stmt = $conn->prepare("SELECT institution_id, institution_name FROM institutions WHERE institution_type='museum'")){
 														$stmt->execute();
 														$stmt->store_result();
-														$stmt->bind_result($institution_id, $exhibition_name);
+														$stmt->bind_result($institution_id, $u_institution_name);
 														while ($stmt->fetch()) {
 													?>
-													<option value="<?php echo $institution_id?>"><?php echo $exhibition_name?></option>
+													<option <?php if(isset($u_institution_id)){if ($u_institution_id == $institution_id) echo 'selected';} ?> value="<?php echo $institution_id?>"><?php echo $u_institution_name?></option>
 													<?php
 														}
 													}
@@ -131,7 +131,7 @@
 												<select id="school-student-import" class="form-control" required>
 													<option value="">Select school </option>
 													<?php
-													if($stmt = $conn->prepare("SELECT institution_id, institution_type, institution_name FROM institutions WHERE institution_type='school' AND approved=1")){
+													if($stmt = $conn->prepare("SELECT institution_id, institution_type, institution_name FROM institutions WHERE institution_type='school' AND approved=1 AND institution_id IN (". $_SESSION['user_institution_id'] . ")")){
 														$stmt->execute();
 														$stmt->store_result();
 														$stmt->bind_result($institution_id, $institution_type, $institution_name);

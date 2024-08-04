@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+    <!HEAD START>
+    <head>
+    <meta charset="utf-8">    
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>    
+        <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/roslibjs/1.1.0/roslib.js" defer></script> -->
+        <!-- <script type="text/javascript" src="../rosjsScripts/ros2d.js" defer></script> -->
+  
+
+        <script type="text/javascript" src="../rosjsScripts/eventemitter2.min.js"></script>
+        <script type="text/javascript" src="../rosjsScripts/roslib.min.js"></script>    
+        <script type="text/javascript" src="../rosjsScripts/easeljs.min.js"></script>
+        <script type="text/javascript" src="../rosjsScripts/ros2d.min.js"></script>
+        <script type="text/javascript" src="../rosjsScripts/mjpegcanvas.min.js"></script>
+        <script type="text/javascript" src="../rosjsScripts/nav2d.js"></script>
+        <script type="text/javascript" src="https://code.createjs.com/1.0.0/createjs.min.js"></script>
+     
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.js"></script>
+    <script type="text/javascript" src="../rosjsScripts/ros2d.js" defer></script>
+        <script type="text/javascript" src="./scripts.js" defer>   
+        
+        
+       
+        </script>
+       
+        <script type="text/javascript" src="./Scripts/drive.js" defer></script>
+        <script type="text/javascript" src="./Scripts/createMap.js" defer></script>
+        <script type="text/javascript" src="./Scripts/odometry.js" defer></script>
+        <script type="text/javascript" src="./Scripts/goToPoint.js" defer></script>
+        <script type="text/javascript" src="./Scripts/savingPositions.js" defer></script>
+
+    </head>
+    <body onload="nav_and_map_init();getPoints();">
+        <div class="feedbackText" id="feedback"></div>
+        <br/>
+        <div>Current Robot Coordinates</div>
+        <div class="PoseX" id="poseX"></div>
+        <div class="PoseY" id="poseY"></div>
+        <div class="PoseZ" id="poseZ"></div>
+        <!-- <div class="PoseLinVel" id="poseLinVel"></div>
+        <div class="PoseTheta" id="poseTheta"></div>
+        <div class="PoseAngVel" id="poseAngVel"></div> -->
+        <br/>
+        <div display:inline-block;>
+            <div class="col-md-5" id="robot_map">
+                <div class="com-md-3">
+                    <button onclick="MapZoomFunc()">+</button>
+                    <button onclick="MapPanFunc()">-</button>
+                    </div>
+            </div>  
+            <div id="map-panel">
+            <div class="col-md-5" id="nav"></div>
+        </div>
+                 
+           
+        
+        </div>
+        <div>
+            X:<input id="x"/>
+            Y:<input id="y"/>
+            Z:<input id="z"/>
+            <button onclick="goTo()">Go to coordinates</button>           
+        </div>
+        <br/>
+        <div>
+            Name of position:<input id="posName"/>
+            <button onclick="positionSave()">Save this position</button>
+        </div>
+        <br/>
+        <div id="points"></div>  
+    </body>

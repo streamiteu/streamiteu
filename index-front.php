@@ -1,45 +1,62 @@
 <?php
+include_once "./config/config.php";
 include_once "./config/dbconnect.php";
 if(session_status() != PHP_SESSION_ACTIVE)
 	session_start();
 
+
+function searchForId($key, $array) {
+   foreach ($array as $item) {
+       if ($item['exhibit_id'] == $key) {
+           return $item;
+       }
+   }
+   return null;
+}
+
+$tempexhibitsArray = array();
+$exhibitsArray = array();
 if(isset($_SESSION['loggedin']) && isset($_SESSION['id'])){
 	$id = $_SESSION['id'];
+	if (isset($_GET['tour_id'])) {
+		$tour_id=$_GET['tour_id'];
+		
+		if($stmt = $conn->prepare("SELECT tour_id, schedule_id, tour_exhibits, current_exhibit_id FROM tours WHERE tour_id=?")){
+			$stmt->bind_param('i', $tour_id);
+			$stmt->execute();
+			$stmt->store_result();
+			$stmt->bind_result($tour_id, $schedule_id, $tour_exhibits, $current_exhibit_id);
+			$stmt->fetch();
+		}
+		$temp = array_map('trim', explode(',', $tour_exhibits));
+		if($stmt = $conn->prepare("SELECT exhibit_id, exhibit_name FROM exhibits WHERE exhibit_id IN (" . $tour_exhibits . ")")){
+			$stmt->execute();
+			$stmt->store_result();
+			$stmt->bind_result($exhibit_id, $exhibit_name);
+			while ($stmt->fetch()) {
+				$rowArray = array('exhibit_id'=>$exhibit_id, 'exhibit_name'=>$exhibit_name);
+				array_push($tempexhibitsArray, $rowArray);
+			}
+		}
+
+		foreach ($temp as $x) {
+			$item = searchForId($x, $tempexhibitsArray);
+			if (!empty($item)) {
+				array_push($exhibitsArray, $item);
+			}
+		}
+	}
 	
-	if($stmt = $conn->prepare("SELECT tour_id, schedule_id, tour_exhibits, current_exhibit_id FROM tours WHERE tour_id=1")){
-		$stmt->execute();
-		$stmt->store_result();
-		$stmt->bind_result($tour_id, $schedule_id, $tour_exhibits, $current_exhibit_id);
-		$stmt->fetch();
-	}
-	$exhibitsArray = array();
-	if($stmt = $conn->prepare("SELECT exhibit_id, exhibit_name FROM exhibits WHERE exhibit_id IN (" . $tour_exhibits . ")")){
-		$stmt->execute();
-		$stmt->store_result();
-		$stmt->bind_result($exhibit_id, $exhibit_name);
-		while ($stmt->fetch()) {
-			$rowArray = array('exhibit_id'=>$exhibit_id, 'exhibit_name'=>$exhibit_name);
-			array_push($exhibitsArray, $rowArray);
-		}
-	}
-	$multimediaArray = array();
-	if($stmt = $conn->prepare("SELECT exhibit_id, description, content_type, path FROM multimedia WHERE exhibit_id IN (" . $tour_exhibits . ")")){
-		$stmt->execute();
-		$stmt->store_result();
-		$stmt->bind_result($exhibit_id, $description, $content_type, $path);
-		while ($stmt->fetch()) {
-			$singleArray = array('exhibit_id'=>$exhibit_id, 'description'=>$description, 'content_type'=>$content_type, 'path'=>$path );
-			array_push($multimediaArray, $singleArray);
-		}
-	}
+
 	
 }else{
+	header('Location: '.$site_url);
 	//echo $_POST['id'];
-	http_response_code(401);
+	//http_response_code(401);
 
 	// return a JSON object with a message property
-	echo json_encode(array("message" => "There was an error processing the request"));
-	die();
+	//echo json_encode(array("message" => "There was an error processing the request"));
+	//die();
 }
 ?>
 
@@ -50,10 +67,28 @@ if(isset($_SESSION['loggedin']) && isset($_SESSION['id'])){
 		<!-- Basic -->
 		<meta charset="UTF-8">
 
-		<title>StreamIT portal</title>
-		<meta name="keywords" content="HTML5 Admin Template" />
-		<meta name="description" content="JSOFT Admin - Responsive HTML5 Template">
-		<meta name="author" content="JSOFT.net">
+		<title>StreamIT Erasmus+ Project</title>
+		<meta name="keywords" content="Robotics, Education, Museum, Virtual tour, Remote control" />
+		<meta name="description" content="The project will provide teachers with modern, attractive, accessible, easy to use educational tool and new high quality open educational content.">
+		<meta name="author" content="StreamIT Consortium">
+
+		<link rel="apple-touch-icon" sizes="57x57" href="./apple-icon-57x57.png">
+		<link rel="apple-touch-icon" sizes="60x60" href="./apple-icon-60x60.png">
+		<link rel="apple-touch-icon" sizes="72x72" href="./apple-icon-72x72.png">
+		<link rel="apple-touch-icon" sizes="76x76" href="./apple-icon-76x76.png">
+		<link rel="apple-touch-icon" sizes="114x114" href="./apple-icon-114x114.png">
+		<link rel="apple-touch-icon" sizes="120x120" href="./apple-icon-120x120.png">
+		<link rel="apple-touch-icon" sizes="144x144" href="./apple-icon-144x144.png">
+		<link rel="apple-touch-icon" sizes="152x152" href="./apple-icon-152x152.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="./apple-icon-180x180.png">
+		<link rel="icon" type="image/png" sizes="192x192"  href="./android-icon-192x192.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="96x96" href="./favicon-96x96.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
+		<link rel="manifest" href="./manifest.json">
+		<meta name="msapplication-TileColor" content="#ffffff">
+		<meta name="msapplication-TileImage" content="./ms-icon-144x144.png">
+		<meta name="theme-color" content="#ffffff">
 
 		<!-- Mobile Metas -->
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -93,13 +128,7 @@ if(isset($_SESSION['loggedin']) && isset($_SESSION['id'])){
 			var tourID = <?php echo $tour_id; ?>;
 			var userType = <?php echo $_SESSION['user_type_id']; ?>;
 			var exhibitsA = <?php echo json_encode($exhibitsArray); ?>;
-			var exhibitsString = <?php echo json_encode($tour_exhibits); ?>;
-			var multimediaA = <?php echo json_encode($multimediaArray); ?>;
-			
-			//alert(exhibitsString);
-			Object.keys(exhibitsA).forEach(key => {
-  //alert(exhibitsA[key].exhibit_id + exhibitsA[key].exhibit_name);
-});
+
 		</script>
 	
 	</head>
@@ -130,13 +159,29 @@ if(isset($_SESSION['loggedin']) && isset($_SESSION['id'])){
 						</div>
 					</header>
 					
+				
 					<div id="contentcontainer">
-						<iframe width="1024" height="550" src="https://www.youtube.com/embed/TSCp9NkU3J0?si=E3hIYfuJTnD3WW-p" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-						<div id="multimedia-container" class="demo">
+					
+					<!--
+						<div id="app">
+						  <div class="resizable-x">
+							<div class="div0" style="flex: 70%;">
+							  <iframe id="leftFrame" style="overflow:hidden; width:100% min-height: 700px" height="700" width="100%" frameBorder="0" src="videoframe.html"></iframe>
+							</div>
+							<div class="resizer-x"></div>
+							<div class="resizable-y" style="flex: 30%;">
 							
+							<iframe src='https://view.officeapps.live.com/op/embed.aspx?src=http%3A%2F%2Fieee802%2Eorg%3A80%2Fsecmail%2FdocIZSEwEqHFr%2Edoc' width='100%' height='100%' frameborder='0'></iframe>
+							
+							</div>
+						  </div>
 						</div>
-					</div>
-						</div>
+-->
+						<img src="thumbnail_image002.jpg" width="100%" />
+						
+						<div id="multimedia-container" class="demo"></div>
+
+						
 					
 					</div>
 					
@@ -144,73 +189,7 @@ if(isset($_SESSION['loggedin']) && isset($_SESSION['id'])){
 				</section>
 			</div>
 
-			<aside id="sidebar-right" class="sidebar-right">
-				<div class="nano">
-					<div class="nano-content">
-						<a href="#" class="mobile-close visible-xs">
-							Collapse <i class="fa fa-chevron-right"></i>
-						</a>
 			
-						<div class="sidebar-right-wrapper">
-			
-							<div class="sidebar-widget widget-calendar">
-								<h6>Upcoming Tasks</h6>
-								<div data-plugin-datepicker data-plugin-skin="dark" ></div>
-			
-								<ul>
-									<li>
-										<time datetime="2014-04-19T00:00+00:00">04/19/2014</time>
-										<span>Company Meeting</span>
-									</li>
-								</ul>
-							</div>
-			
-							<div class="sidebar-widget widget-friends">
-								<h6>Friends</h6>
-								<ul>
-									<li class="status-online">
-										<figure class="profile-picture">
-											<img src="assets/images/!sample-user.jpg" alt="Joseph Doe" class="img-circle">
-										</figure>
-										<div class="profile-info">
-											<span class="name">Joseph Doe Junior</span>
-											<span class="title">Hey, how are you?</span>
-										</div>
-									</li>
-									<li class="status-online">
-										<figure class="profile-picture">
-											<img src="assets/images/!sample-user.jpg" alt="Joseph Doe" class="img-circle">
-										</figure>
-										<div class="profile-info">
-											<span class="name">Joseph Doe Junior</span>
-											<span class="title">Hey, how are you?</span>
-										</div>
-									</li>
-									<li class="status-offline">
-										<figure class="profile-picture">
-											<img src="assets/images/!sample-user.jpg" alt="Joseph Doe" class="img-circle">
-										</figure>
-										<div class="profile-info">
-											<span class="name">Joseph Doe Junior</span>
-											<span class="title">Hey, how are you?</span>
-										</div>
-									</li>
-									<li class="status-offline">
-										<figure class="profile-picture">
-											<img src="assets/images/!sample-user.jpg" alt="Joseph Doe" class="img-circle">
-										</figure>
-										<div class="profile-info">
-											<span class="name">Joseph Doe Junior</span>
-											<span class="title">Hey, how are you?</span>
-										</div>
-									</li>
-								</ul>
-							</div>
-			
-						</div>
-					</div>
-				</div>
-			</aside>
 		</section>
 
 		<!-- Vendor -->
@@ -263,8 +242,10 @@ if(isset($_SESSION['loggedin']) && isset($_SESSION['id'])){
 		
 		
 		<script>
+
+		
 		setInterval(function() {
-		if(userType == 6){
+		if(userType == 6 || userType == 5 || userType == 4){
 			
 			var fd = new FormData();
 			
@@ -281,7 +262,13 @@ if(isset($_SESSION['loggedin']) && isset($_SESSION['id'])){
 					
 					var result = JSON.parse(response);
 					var exhibit_id = result.message;
-					
+					if(exhibit_id != '' && exhibit_id !=0){
+						$('#multimedia-attachments li').removeClass('nav-active');
+						$('#exhibit-'+exhibit_id).addClass('nav-active');
+						var index = exhibitsA.findIndex(x => x.exhibit_id == exhibit_id);
+						$('#exhibit-title').html(exhibitsA[index].exhibit_name);
+					}
+					/*
 					if(exhibit_id != ''){
 						var index = exhibitsA.findIndex(x => x.exhibit_id == exhibit_id);
 						$('#exhibit-title').html(exhibitsA[index].exhibit_name);
@@ -293,6 +280,8 @@ if(isset($_SESSION['loggedin']) && isset($_SESSION['id'])){
 						});
 						$('#multimedia-attachments').html(html_content);
 					}
+					
+					*/
 				},
 				error: function(xhr, status, error) {
 				
@@ -300,6 +289,85 @@ if(isset($_SESSION['loggedin']) && isset($_SESSION['id'])){
 			});
 		}
 	}, 2000);
+	
+/*	
+	(function () {
+  "use strict";
+
+  // horizontal direction
+  (function resizableX() {
+    const resizer = document.querySelector(".resizer-x");
+    resizer.addEventListener("mousedown", onmousedown);
+    resizer.addEventListener("touchstart", ontouchstart);
+
+    // for mobile
+    function ontouchstart(e) {
+      e.preventDefault();
+      resizer.addEventListener("touchmove", ontouchmove);
+      resizer.addEventListener("touchend", ontouchend);
+    }
+    function ontouchmove(e) {
+      e.preventDefault();
+      const clientX = e.touches[0].clientX;
+      const deltaX = clientX - (resizer._clientX || clientX);
+      resizer._clientX = clientX;
+      const l = resizer.previousElementSibling;
+      const r = resizer.nextElementSibling;
+      // LEFT
+      if (deltaX < 0) {
+        const w = Math.round(parseInt(getComputedStyle(l).width) + deltaX);
+        l.style.flex = `0 ${w < 10 ? 0 : w}px`;
+        r.style.flex = "1 0";
+      }
+      // RIGHT
+      if (deltaX > 0) {
+        const w = Math.round(parseInt(getComputedStyle(r).width) - deltaX);
+        r.style.flex = `0 ${w < 10 ? 0 : w}px`;
+        l.style.flex = "1 0";
+      }
+    }
+    function ontouchend(e) {
+      e.preventDefault();
+      resizer.removeEventListener("touchmove", ontouchmove);
+      resizer.removeEventListener("touchend", ontouchend);
+      delete e._clientX;
+    }
+
+    // for desktop
+    function onmousedown(e) {
+      e.preventDefault();
+      document.addEventListener("mousemove", onmousemove);
+      document.addEventListener("mouseup", onmouseup);
+    }
+    function onmousemove(e) {
+      e.preventDefault();
+      const clientX = e.clientX;
+      const deltaX = clientX - (resizer._clientX || clientX);
+      resizer._clientX = clientX;
+      const l = resizer.previousElementSibling;
+      const r = resizer.nextElementSibling;
+      // LEFT
+      if (deltaX < 0) {
+        const w = Math.round(parseInt(getComputedStyle(l).width) + deltaX);
+        l.style.flex = `0 ${w < 10 ? 0 : w}px`;
+        r.style.flex = "1 0";
+      }
+      // RIGHT
+      if (deltaX > 0) {
+        const w = Math.round(parseInt(getComputedStyle(r).width) - deltaX);
+        r.style.flex = `0 ${w < 10 ? 0 : w}px`;
+        l.style.flex = "1 0";
+      }
+    }
+    function onmouseup(e) {
+      e.preventDefault();
+      document.removeEventListener("mousemove", onmousemove);
+      document.removeEventListener("mouseup", onmouseup);
+      delete e._clientX;
+    }
+  })();
+})();
+*/
 	</script>
 		
 		
